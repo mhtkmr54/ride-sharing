@@ -1,3 +1,12 @@
+"""
+to create output matrices dist and time that can give temporal and spatial distance from all to all nodes
+run using:
+python FloydWarshall.py <input file> <output file>
+input file must adhere to the following format:
+no. of nodes(V)
+no. of arcs(E)
+<tail node> <head node> <weight>        --this line occurs E times
+"""
 import sys 
 import numpy as np
 
@@ -11,8 +20,8 @@ def obtainPath(i, j):
         return obtainPath(i, parent[i][j]) + str(parent[i][j]+1) + obtainPath(parent[i][j], j)
 
 
-if len(sys.argv) < 2:
-	print "need input file, Check README for usage."
+if len(sys.argv) < 3:
+	print "need input file, distance type."
 	sys.exit(-1)
 	
 try:	
@@ -30,7 +39,7 @@ parent = []
 # no of edges
 E = int(fil.readline().strip())
 
-# d0[i,j]
+# init with infinite distances
 for i in range (0, V):
     dist.append([])
     parent.append([])
@@ -75,6 +84,7 @@ for k in range(0,V):
         print "Path :", str(i+1) + obtainPath(i,j) + str(j+1)
         print "Distance :", dist[i][j]
 """
-np.savetxt('time.txt', dist, fmt='%-3.0f')        
+#save output
+np.savetxt(sys.argv[2], dist, fmt='%-3.0f')        
 
 fil.close()
