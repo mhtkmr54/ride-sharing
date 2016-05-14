@@ -19,7 +19,7 @@ class Taxi(object):
         
     #def insert(self,query):
         
-new_query = Query((4,7,25))
+new_query = Query((4,7,2))
 time_window = 6
 
 G_origin = new_query.pick
@@ -40,15 +40,15 @@ T = np.loadtxt('time.txt')
 Gt= np.loadtxt('Gt.txt')
 Gd= np.loadtxt('Gd.txt')
 
-for grid_cell in Gt[G_origin]:
-    if new_query.curr_time + T[grid_cell][G_origin] < new_query.curr_time + time_window :
+for grid_cell in Gt[G_origin-1]:
+    if new_query.curr_time + T[grid_cell][G_origin-1] < new_query.curr_time + time_window :
         l_o.append(grid_cell)
     else:
         break
     
 l_d = []
-for grid_cell in Gt[G_destination]:
-    if new_query.curr_time + T[grid_cell][G_destination] < T[G_origin][G_destination] + time_window :
+for grid_cell in Gt[G_destination-1]:
+    if new_query.curr_time + T[grid_cell-1][G_destination-1] < T[G_origin-1][G_destination-1] + time_window :
         l_d.append(grid_cell)
     else:
         break
@@ -63,46 +63,55 @@ Stop_D = False
 Tlist=np.loadtxt('Tlist')
 TimeTlist=np.loadtxt('TimeTlist.txt')
 i = 1
-while len(Selected_taxis) == 0 and (Stop_O == False or Stop_D == False) :
-    for taxi in Tlist[G_origin]:
-        if TimeTlist[G_origin][taxi] >= new_query.curr_time and taxi < new_query.curr_time + time_window :
-            S_origin.add(taxi)
-        else:
-            break
+check = 0
+
+# initial check on origin grid and destination grid
+for taxi in Tlist[G_origin-1]:
+    if TimeTlist[G_origin-1][taxi] >= new_query.curr_time and taxi < new_query.curr_time + time_window :
+        S_origin.add(taxi)
+    else:
+        break
             
-    for taxi in Tlist[G_destination]:
-        if TimeTlist[G_destination][taxi] >= new_query.curr_time and taxi < T[G_origin][G_destination] + time_window :
-            S_destination.add(taxi)
-        else:
-            break
-    print Selected_taxis
-    print "Selected_taxis above"
-    if len(Selected_taxis):
+for taxi in Tlist[G_destination-1]:
+    if TimeTlist[G_destination-1][taxi] >= new_query.curr_time and taxi < T[G_origin-1][G_destination-1] + time_window :
+        S_destination.add(taxi)
+    else:
+        break
+    
+print S_origin | S_destination
+print "Selected_taxis above"
+if len(S_origin | S_destination):
+    check == 1
+
+
+#cheking nearby cells of origin and destination
+while len(S_origin | S_destination) == 0 and (Stop_O == False or Stop_D == False) :
+
+    if check == 1:
         break
     
     #-------------------------------------------------------------------------------------
     try:
-        for taxi in Tlist[l_o[i]]:
-            if TimeTlist[l_o[i]][taxi] >= new_query.curr_time and taxi < (new_query.curr_time + time_window) - T[l_o[i]][G_origin] :
+        for taxi in Tlist[l_o[i]-1]:
+            if TimeTlist[l_o[i]-1][taxi] >= new_query.curr_time and taxi < (new_query.curr_time + time_window) - T[l_o[i]-1][G_origin-1] :
                 S_origin.add(taxi)
             else:
                 break
     except IndexError:
         pass
     
-    try:       
-        for taxi in Tlist[l_d[i]]:
-            if TimeTlist[l_d[i]][taxi] >= new_query.curr_time and taxi < T[G_origin][G_destination] + time_window - T[l_d[i]][G_destination]:
-                S_destination.add(taxi)
-            else:
-                break
-    except IndexError:
-        pass        
-            
+         
+    for taxi in Tlist[l_d[i]-1]:
+        if TimeTlist[l_d[i]-1][taxi] >= new_query.curr_time and taxi < T[G_origin-1][G_destination-1] + time_window - T[l_d[i]-1][G_destination-1]:
+            S_destination.add(taxi)
+        else:
+            break
+    print S_origin | S_destination
+    print "Selected_taxis above from while loop"
     if len(Selected_taxis):
         break
     i = i + 1
     
     
-print Selected_taxis
+
     
